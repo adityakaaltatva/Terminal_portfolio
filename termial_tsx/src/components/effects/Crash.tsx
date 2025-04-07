@@ -18,7 +18,7 @@ export function Crash() {
         <p className="text-xl">
           {stage === 0 && 'CRITICAL ERROR'}
           {stage === 1 && 'DATA CORRUPTION'}
-          {stage === 2 && 'SYSTEM HALTED'}
+          {stage === 2 && 'SYSTEM HALTED '}
         </p>
       </div>
     </div>

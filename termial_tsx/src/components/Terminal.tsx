@@ -74,6 +74,20 @@ Nmap scan complete`}
     }, 3000);
   };
 
+  const simulateResume = () => {
+    const link = document.createElement('a');
+    link.href = '/Aditya_Pandey_Resume.pdf'; // File should be in public folder
+    link.download = 'Aditya_Pandey_Resume.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setHistory(prev => [...prev, {
+      input: 'resume',
+      output: <p className="text-green-400">📄 Downloading resume... Check your downloads folder.</p>
+    }]);
+  };
+
   const handleCommand = (cmd: string) => {
     const command = cmd.toLowerCase().trim();
     let output: React.ReactNode;
@@ -111,6 +125,9 @@ Nmap scan complete`}
       case 'nmap adityapandey':
         simulateNmapScan();
         return;
+      case 'resume':
+        simulateResume();
+        return;
       case 'neo':
         output = (
           <p className="text-green-400 italic animate-pulse">
@@ -142,6 +159,7 @@ Nmap scan complete`}
             <p>Available commands:</p>
             <ul className="ml-4 list-disc space-y-1">
               <li>about, whoami - View my bio</li>
+              <li>resume - Download the latest Resume</li>
               <li>projects, ls projects - View my projects</li>
               <li>skills - View my technical skills</li>
               <li>contact - View contact information</li>
@@ -216,7 +234,7 @@ Nmap scan complete`}
         <AsciiArt />
 
         <div className="mb-4 typewriter text-purple-300">
-          Welcome to my  terminal. Type 'help' to begin.
+          Welcome to my terminal. Type 'help' to begin.
         </div>
 
         {history.map((cmd, i) => (
