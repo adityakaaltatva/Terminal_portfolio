@@ -4,10 +4,11 @@ import Typed from 'typed.js';
 import { About } from './sections/About';
 import { Projects } from './sections/Projects';
 import { Skills } from './sections/Skills';
-import { Contact } from './sections/Contact';
+import Contact from './sections/Contact'; 
 import { AsciiArt } from './AsciiArt';
 import { Matrix } from './effects/Matrix';
 import { Crash } from './effects/Crash';
+import './node.css';
 
 type Command = {
   input: string;
@@ -23,7 +24,7 @@ export function Terminal() {
   const [showCrash, setShowCrash] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const typedRef = useRef<Typed | null>(null);
+  const [loadingScan, setLoadingScan] = useState(false);
 
   const simulateHacking = () => {
     const hackingLines = [
@@ -32,7 +33,8 @@ export function Terminal() {
       'Accessing mainframe...',
       'Downloading data...',
       'Covering tracks...',
-      'Hack complete!'
+      'Hack complete!',
+      'Lets Go .....'
     ];
 
     let output = '';
@@ -41,25 +43,35 @@ export function Terminal() {
         output += line + '\n';
         setHistory(prev => [
           ...prev.slice(0, -1),
-          { input: 'hacktheplanet', output: <pre className="text-green-400">{output}</pre> }
+          { input: 'hacktheplanet', output: <pre className="text-green-400 animate-pulse">{output}</pre> }
         ]);
       }, index * 1000);
     });
   };
 
-  const simulatePortScan = () => {
-    return (
-      <pre className="text-green-400">
-        {`Starting Nmap 7.94 ( https://nmap.org )
+  const simulateNmapScan = () => {
+    setLoadingScan(true);
+    const scanOutput = (
+      <pre className="text-green-400 animate-fade-in">
+{`Starting Nmap 7.94 ( https://nmap.org )
 PORT     STATE    SERVICE
 22/tcp   open     ssh
 80/tcp   open     http
 443/tcp  open     https
 3000/tcp filtered node
 8080/tcp open     http-proxy
+
 Nmap scan complete`}
       </pre>
     );
+
+    setTimeout(() => {
+      setLoadingScan(false);
+      setHistory(prev => [...prev, {
+        input: 'nmap adityapandey',
+        output: scanOutput
+      }]);
+    }, 3000);
   };
 
   const handleCommand = (cmd: string) => {
@@ -93,41 +105,42 @@ Nmap scan complete`}
         setTimeout(() => setShowCrash(false), 5000);
         return;
       case 'hacktheplanet':
+        setHistory(prev => [...prev, { input: cmd, output: <pre className="text-green-400">Starting hack...</pre> }]);
         simulateHacking();
         return;
       case 'nmap adityapandey':
-        output = simulatePortScan();
-        break;
+        simulateNmapScan();
+        return;
       case 'neo':
         output = (
-          <p className="text-green-400 italic">
+          <p className="text-green-400 italic animate-pulse">
             "I know kung fu." - Neo, The Matrix
           </p>
         );
         break;
       case 'login root':
         output = (
-          <div className="text-red-500">
+          <div className="text-red-500 glitch">
             Access Denied. FBI Notified.
             <br />
-            Tracking IP: {Math.floor(Math.random() * 255)}.{Math.floor(Math.random() * 255)}.{Math.floor(Math.random() * 255)}.{Math.floor(Math.random() * 255)}
+            Tracking IP: {Array(4).fill(0).map(() => Math.floor(Math.random() * 255)).join('.')}
           </div>
         );
         break;
       case 'hireme':
         output = (
-          <div className="space-y-2">
-            <p className="text-yellow-400">🚀 Looking for a passionate developer who thinks outside the box?</p>
-            <p>You've found one! Check out my resume and let's create something amazing together.</p>
+          <div className="space-y-2 text-yellow-400 animate-fade-in">
+            <p>🚀 Looking for a passionate developer who thinks outside the box?</p>
+            <p>You've found one! Check out my resume and let's build something legendary.</p>
             <p className="text-sm opacity-60">Type 'contact' to reach out!</p>
           </div>
         );
         break;
       case 'help':
         output = (
-          <div className="my-2 space-y-2">
+          <div className="my-2 space-y-2 text-purple-300">
             <p>Available commands:</p>
-            <ul className="ml-4 space-y-1">
+            <ul className="ml-4 list-disc space-y-1">
               <li>about, whoami - View my bio</li>
               <li>projects, ls projects - View my projects</li>
               <li>skills - View my technical skills</li>
@@ -145,7 +158,7 @@ Nmap scan complete`}
         );
         break;
       default:
-        output = <p className="text-red-500">Command not found. Type 'help' for available commands.</p>;
+        output = <p className="text-red-400 animate-pulse">Command not found. Type 'help' for commands.</p>;
     }
 
     setHistory(prev => [...prev, { input: cmd, output }]);
@@ -156,7 +169,7 @@ Nmap scan complete`}
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [history]);
+  }, [history, loadingScan]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -187,36 +200,41 @@ Nmap scan complete`}
   }, [historyIndex, commandHistory]);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-[#1a1a1a] rounded-lg shadow-xl border border-[#333] p-4 min-h-[80vh] overflow-y-auto relative">
+    <div className="max-w-4xl mx-auto font-mono text-sm text-green-300">
+      <div className="bg-[#0d0d0d] rounded-lg shadow-2xl border border-[#444] p-4 min-h-[80vh] overflow-y-auto relative">
+
         {showMatrix && <Matrix />}
         {showCrash && <Crash />}
-        
+
         <div className="flex items-center gap-2 mb-4 border-b border-[#333] pb-2">
           <div className="w-3 h-3 rounded-full bg-red-500"></div>
           <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
           <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="ml-2 text-sm opacity-50">welcome@adityapandey:~</span>
+          <span className="ml-2 text-sm text-gray-500">welcome@aditya_pandey:~</span>
         </div>
 
         <AsciiArt />
 
-        <div className="mb-4 typewriter">
-          Welcome to my portfolio terminal. Type 'help' for available commands.
+        <div className="mb-4 typewriter text-purple-300">
+          Welcome to my  terminal. Type 'help' to begin.
         </div>
 
         {history.map((cmd, i) => (
-          <div key={i} className="mb-4">
+          <div key={i} className="mb-4 animate-fade-in">
             <div className="flex items-center gap-2">
-              <span className="text-[#00ff00]">welcome@adityapandey:~$</span>
+              <span className="text-green-500">welcome@adityapandey:~$</span>
               <span>{cmd.input}</span>
             </div>
             <div className="mt-2 ml-4">{cmd.output}</div>
           </div>
         ))}
 
-        <div className="flex items-center gap-2">
-          <span className="text-[#00ff00]">welcome@adityapandey:~$</span>
+        {loadingScan && (
+          <div className="ml-4 text-green-400 animate-pulse">Scanning network...</div>
+        )}
+
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-green-500">welcome@adityapandey:~$</span>
           <input
             ref={inputRef}
             type="text"
@@ -227,7 +245,7 @@ Nmap scan complete`}
                 handleCommand(input);
               }
             }}
-            className="flex-1 bg-transparent border-none outline-none focus:ring-0"
+            className="flex-1 bg-transparent border-none outline-none text-green-200 caret-pink-500"
             autoFocus
           />
         </div>

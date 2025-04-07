@@ -1,7 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import React, { useEffect, useRef, useCallback } from 'react';
 
 export function Matrix() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+  const resizeRef = useRef<() => void>();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -10,23 +13,28 @@ export function Matrix() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
     const fontSize = 16;
-    const columns = canvas.width / fontSize;
-    const drops: number[] = [];
+    let columns = Math.floor(window.innerWidth / fontSize);
+    const drops = Array(columns).fill(1);
 
-    for (let i = 0; i < columns; i++) {
-      drops[i] = 1;
-    }
+    const setCanvasSize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(window.innerWidth / fontSize);
+      drops.length = columns;
+      drops.fill(1);
+    };
 
-    function draw() {
+    setCanvasSize();
+    resizeRef.current = setCanvasSize;
+
+    const draw = () => {
+      if (!ctx) return;
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#0F0';
+      ctx.fillStyle = '#00ff00';
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -39,10 +47,17 @@ export function Matrix() {
 
         drops[i]++;
       }
-    }
 
-    const interval = setInterval(draw, 33);
-    return () => clearInterval(interval);
+      animationRef.current = requestAnimationFrame(draw);
+    };
+
+    animationRef.current = requestAnimationFrame(draw);
+    window.addEventListener('resize', resizeRef.current);
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (resizeRef.current) window.removeEventListener('resize', resizeRef.current);
+    };
   }, []);
 
   return (
